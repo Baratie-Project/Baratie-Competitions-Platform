@@ -1,3 +1,6 @@
+from App.database import db
+from datetime import datetime
+
 class RankHistory(db.Model):
     __tablename__ = 'rank_history'
 
