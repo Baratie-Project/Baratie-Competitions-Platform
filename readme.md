@@ -9,7 +9,7 @@
 A template for flask applications structured in the Model View Controller pattern [Demo](https://dcit-flaskmvc.herokuapp.com/). [Postman Collection](https://documenter.getpostman.com/view/583570/2s83zcTnEJ)
 
 
-# Dependencies tTHIS IS SOME TEST CODE TESTTTTTTTTTTTTTTTTTTTTTTT
+# Dependencies
 * Python3/pip3
 * Packages listed in requirements.txt
 
