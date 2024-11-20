@@ -7,3 +7,6 @@ from .competition_moderator import *
 from .competition_team import *
 from .student_team import *
 from .notification import *
+from .ranking_history import *
+from .competition_subject_interface import *
+from .student_observer_interface import *
