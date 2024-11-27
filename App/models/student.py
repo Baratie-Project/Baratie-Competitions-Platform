@@ -1,8 +1,9 @@
 from App.database import db
 from App.models import User
-from App.models.student_observer_interface import StudentObserver
+from .ranking_history import RankHistory
+from .leaderboard_snapshot import LeaderboardSnapshot
 
-class Student(User, StudentObserver):
+class Student(User):
     __tablename__ = 'student'
 
     rating_score = db.Column(db.Float, nullable=False, default=0)
@@ -11,7 +12,7 @@ class Student(User, StudentObserver):
     prev_rank = db.Column(db.Integer, nullable=False, default=0)
     teams = db.relationship('Team', secondary='student_team', overlaps='students', lazy=True)
     notifications = db.relationship('Notification', backref='student', lazy=True)
-    ranking_history = db.relationship('RankHistory', backref='student', lazy=True)
+    historical_ranking = db.relationship('RankHistory', backref='student', lazy=True)
 
     def __init__(self, username, password):
         super().__init__(username, password)
@@ -22,6 +23,19 @@ class Student(User, StudentObserver):
         self.teams = []
         self.notifications = []
 
+    def save_rank_history(self, rank, leaderboard_snapshot_id):
+        try:
+            rank_history = RankHistory(
+                student_id=self.id,
+                rank=rank,
+                leaderboard_snapshot_id=leaderboard_snapshot_id
+            )
+            db.session.add(rank_history)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error saving rank history: {e}")
+
     def add_notification(self, notification):
         if notification:
             try:
@@ -30,6 +44,7 @@ class Student(User, StudentObserver):
                 return notification
             except Exception as e:
                 db.session.rollback()
+                print(f"Error adding notification: {e}")
                 return None
         return None
 
@@ -42,7 +57,7 @@ class Student(User, StudentObserver):
             "curr_rank": self.curr_rank
         }
 
-    def to_Dict(self):
+    def to_dict(self):
         return {
             "ID": self.id,
             "Username": self.username,
@@ -51,19 +66,5 @@ class Student(User, StudentObserver):
             "Rank": self.curr_rank
         }
 
-    def update_rank(self, new_rank):
-        self.prev_rank = self.curr_rank
-        self.curr_rank = new_rank
-
-        rank_entry = RankHistory(student_id=self.id, rank=new_rank)
-        try:
-            db.session.add(rank_entry)
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            print(f"Failed to update rank history: {e}")
-
     def __repr__(self):
         return f'<Student {self.id} : {self.username}>'
-
-assert hasattr(Student, "update_rank"), "Student must implement the update_rank method"
