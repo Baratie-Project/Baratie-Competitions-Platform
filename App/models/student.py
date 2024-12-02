@@ -6,7 +6,7 @@ from .leaderboard_snapshot import LeaderboardSnapshot
 class Student(User):
     __tablename__ = 'student'
 
-    rating_score = db.Column(db.Float, nullable=False, default=0)
+    rating_score = db.Column(db.Float, nullable=False, default=250)
     comp_count = db.Column(db.Integer, nullable=False, default=0)
     curr_rank = db.Column(db.Integer, nullable=False, default=0)
     prev_rank = db.Column(db.Integer, nullable=False, default=0)
@@ -16,7 +16,7 @@ class Student(User):
 
     def __init__(self, username, password):
         super().__init__(username, password)
-        self.rating_score = 0
+        self.rating_score = 250
         self.comp_count = 0
         self.curr_rank = 0
         self.prev_rank = 0

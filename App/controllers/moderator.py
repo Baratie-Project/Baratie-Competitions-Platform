@@ -2,6 +2,9 @@ import math
 from App.database import db
 from App.models import Moderator, Competition, Team, CompetitionTeam
 
+MIN_RATING = 100  # Define a minimum rating threshold
+MAX_PENALTY = 5   # Define a maximum penalty for low-rated participants
+
 def create_moderator(username, password):
     mod = get_moderator_by_username(username)
     if mod:
@@ -95,9 +98,8 @@ def add_results(mod_name, comp_name, team_name, score):
 
                 if comp_team:
                     comp_team.points_earned = score
-                    
                     comp_team.rating_score = (score/comp.max_score) * 20 * comp.level
-                    print(f'Score:{score}  Complevel:{comp.level} Max Score: {comp.max_score} Competition Team Rating Score {comp_team.rating_score}')
+        
                     try:
                         db.session.add(comp_team)
                         db.session.commit()
@@ -108,6 +110,8 @@ def add_results(mod_name, comp_name, team_name, score):
                         print("Something went wrong!")
                         return None
     return None
+
+
 
 
 def calculate_expected_rank(rating, opponents):
@@ -133,6 +137,7 @@ def calculate_rating_change(rating, actual_rank, expected_rank):
     k = calculate_dynamic_k(rating)
     return k * (expected_rank - actual_rank)
 
+
 def update_ratings(mod_name, comp_name):
     mod = Moderator.query.filter_by(username=mod_name).first()
     comp = Competition.query.filter_by(name=comp_name).first()
@@ -144,29 +149,61 @@ def update_ratings(mod_name, comp_name):
         print(f'{comp_name} was not found!')
         return None
     elif comp.confirm:
-        print(f'Results for {comp_name} has already been finalized!')
+        print(f'Results for {comp_name} have already been finalized!')
         return None
     elif mod not in comp.moderators:
-        print(f'{mod_name} is not authorized to add results for {comp_name}!')
+        print(f'{mod_name} is not authorized to update ratings for {comp_name}!')
         return None
-    elif len(comp.teams) == 0:
-        print(f'No teams found. Results can not be confirmed!')
+
+    # Fetch students and their scores
+    comp_teams = CompetitionTeam.query.filter_by(comp_id=comp.id).all()
+    participants = []
+    for comp_team in comp_teams:
+        team = Team.query.filter_by(id=comp_team.team_id).first()
+        participants.extend(team.students)
+
+    if not participants:
+        print("No participants found in this competition.")
         return None
-    else:
-        comp_teams = CompetitionTeam.query.filter_by(comp_id=comp.id).all()
 
-        for comp_team in comp_teams:
-            team = Team.query.filter_by(id=comp_team.team_id).first()
+    # Prepare participant data
+    participants = sorted(participants, key=lambda s: s.rating_score, reverse=True)
+    actual_ranks = {stud.id: rank + 1 for rank, stud in enumerate(participants)}
+    ratings = [stud.rating_score for stud in participants]
 
-            for stud in team.students:
-                stud.rating_score = (stud.rating_score*stud.comp_count + comp_team.rating_score)/(stud.comp_count+1)
-                stud.comp_count += 1
-                try:
-                    db.session.add(stud)
-                    db.session.commit()
-                except Exception as e:
-                    db.session.rollback()
+    # Update ratings for each participant
+    for student in participants:
+        # Calculate expected rank
+        expected_rank = calculate_expected_rank(student.rating_score, ratings)
+        actual_rank = actual_ranks[student.id]
 
-        comp.confirm = True
-        print("Results finalized!")
+        # Calculate rating change with dynamic K
+        rating_change = calculate_rating_change(
+            rating=student.rating_score,
+            actual_rank=actual_rank,
+            expected_rank=expected_rank,
+        )
+
+        # Apply rating change
+        student.rating_score += rating_change
+        student.comp_count += 1
+
+        try:
+            db.session.add(student)
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error updating student {student.id}: {e}")
+            return None
+
+    # Mark the competition as finalized
+    comp.confirm = True
+    try:
+        db.session.add(comp)
+        db.session.commit()
+        print("Ratings updated successfully using dynamic K Elo!")
         return True
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error finalizing results: {e}")
+        return None
+
