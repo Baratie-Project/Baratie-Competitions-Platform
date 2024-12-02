@@ -1,3 +1,4 @@
+import math
 from App.database import db
 from App.models import Moderator, Competition, Team, CompetitionTeam
 
@@ -94,7 +95,9 @@ def add_results(mod_name, comp_name, team_name, score):
 
                 if comp_team:
                     comp_team.points_earned = score
+                    
                     comp_team.rating_score = (score/comp.max_score) * 20 * comp.level
+                    print(f'Score:{score}  Complevel:{comp.level} Max Score: {comp.max_score} Competition Team Rating Score {comp_team.rating_score}')
                     try:
                         db.session.add(comp_team)
                         db.session.commit()
@@ -106,6 +109,29 @@ def add_results(mod_name, comp_name, team_name, score):
                         return None
     return None
 
+
+def calculate_expected_rank(rating, opponents):
+    """
+    Calculate the expected rank of a participant based on their rating and opponents' ratings.
+    """
+    return sum(1 / (1 + math.pow(10, (opponent - rating) / 400)) for opponent in opponents)
+
+
+def calculate_dynamic_k(rating):
+    """
+    Calculate a dynamic K-factor based on the participant's current rating.
+    Lower-rated participants get a smaller K to reduce penalties.
+    """
+    base_k = 4  # Base K-factor
+    scaling_factor = 1 + max(0, 400 - rating) / 400  # Scale K dynamically
+    return base_k * scaling_factor
+
+def calculate_rating_change(rating, actual_rank, expected_rank):
+    """
+    Calculate the change in Elo rating for a participant with dynamic K.
+    """
+    k = calculate_dynamic_k(rating)
+    return k * (expected_rank - actual_rank)
 
 def update_ratings(mod_name, comp_name):
     mod = Moderator.query.filter_by(username=mod_name).first()
