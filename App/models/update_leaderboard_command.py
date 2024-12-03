@@ -12,31 +12,31 @@ class UpdateLeaderboardCommand(Command):
     
     def execute(self):
         try:
+            # Query all students ordered by rating
             students = Student.query.order_by(Student.rating_score.desc()).all()
 
             # Create the current leaderboard
             rank = 1
             snapshot_data = []
 
-            for student in students:
-                # Save the previous rank
-                student.prev_rank = student.curr_rank
-                # Update the current rank
-                student.curr_rank = rank
-                
-                # Generate a notification message
-                if student.prev_rank == 0:
-                    message = f'RANK : {student.curr_rank}. Congratulations on your first rank!'
-                elif student.curr_rank == student.prev_rank:
-                    message = f'RANK : {student.curr_rank}. Well done! You retained your rank.'
-                elif student.curr_rank < student.prev_rank:
-                    message = f'RANK : {student.curr_rank}. Congratulations! Your rank has gone up!'
-                else:
-                    message = f'RANK : {student.curr_rank}. Oh no! Your rank has gone down.'
+            # Keep track of the original ranks before making updates
+            original_ranks = {student.id: student.curr_rank for student in students}
 
-                # Create a Notification instance and add it to the student
-                notification = Notification(student_id=student.id, message=message)
-                student.add_notification(notification)
+            for student in students:
+                if student.curr_rank != rank:
+                    # Update ranks if there's a change
+                    student.prev_rank = student.curr_rank
+                    student.curr_rank = rank
+
+                    # Generate a notification message
+                    if student.curr_rank < student.prev_rank:
+                        message = f'RANK : {student.curr_rank}. Congratulations! Your rank has gone up!'
+                    else:
+                        message = f'RANK : {student.curr_rank}. Oh no! Your rank has gone down.'
+
+                    # Create a Notification instance and add it to the student
+                    notification = Notification(student_id=student.id, message=message)
+                    student.add_notification(notification)
 
                 # Prepare snapshot data
                 student_data = {
@@ -60,13 +60,16 @@ class UpdateLeaderboardCommand(Command):
             if snapshot_id is None:
                 raise Exception("Snapshot creation failed.")
 
-            # Save rank history and update the current leaderboard
+            # Save rank history ONLY for students whose rank changed
             for student in students:
-                student.save_rank_history(rank=student.curr_rank, leaderboard_snapshot_id=snapshot_id)
+                original_rank = original_ranks[student.id]  # Retrieve the original rank
+                if student.curr_rank != original_rank:
+                    student.save_rank_history(rank=student.curr_rank, leaderboard_snapshot_id=snapshot_id)
 
         except Exception as e:
             db.session.rollback()
             print(f"Error updating leaderboard: {e}")
+
 
     def take_snapshot(self, snapshot_data):
         try:
