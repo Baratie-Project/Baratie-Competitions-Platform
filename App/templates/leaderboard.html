@@ -1,80 +1,124 @@
 {% extends "layout.html" %}
-{% block title %}Homepage{% endblock %}
+{% block title %}Leaderboard{% endblock %}
 {% block page %}UWI Competitions Platform{% endblock %}
 
 {{ super() }}
 
 {% block content %}
+<head>
+    <!-- Add this to the head section -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+</head>
 
 <style>
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: #1e1e1e;
+        color: white;
+    }
 
-    .tables-container {
-        display: flex;
-        justify-content: space-between;
+    .leaderboard-container {
+        margin: 30px auto;
+        max-width: 1200px;
+        text-align: center;
+    }
+
+    .leaderboard-title {
+        font-size: 38px;
+        margin-bottom: 20px;
+        color: #ffffff;
+        font-family: 'Poppins', sans-serif;
     }
 
     .leaderboard-table {
         width: 100%;
         border-collapse: collapse;
         margin-top: 20px;
+        background-color: #2b2b2b;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .leaderboard-table thead {
+        background-color: #3a3a3a;
     }
 
     .leaderboard-table th,
     .leaderboard-table td {
-        padding: 12px 15px;
-        text-align: left;
-        border-bottom: 1px solid white;
+        padding: 15px;
+        text-align: center;
+        font-size: 16px;
     }
 
-    /*.leaderboard-table th {
-        background-color: #f2f2f2;
-        font-weight: bold;
+    .leaderboard-table th {
+        font-size: 20px;
+        font-weight: 500;
+        color: #00d1ff;
+        text-transform: uppercase;
+    }
+
+    .leaderboard-table tbody tr {
+        border-bottom: 1px solid #444444;
     }
 
     .leaderboard-table tbody tr:nth-child(even) {
-        background-color: #f2f2f2;
-    }*/
+        background-color: #242424;
+    }
 
     .leaderboard-table tbody tr:hover {
-        background-color: black;
+        background-color: #333333;
+        transition: background-color 1s ease;
     }
 
     .leaderboard-table tbody tr td a {
-        color: black;
+        color: #00d1ff;
         text-decoration: none;
-        font-weight: bold;
+        font-weight: 200;
     }
 
     .leaderboard-table tbody tr td a:hover {
         text-decoration: underline;
     }
+
+    .leaderboard-empty {
+        text-align: center;
+        padding: 20px;
+        font-size: 18px;
+        color: #aaaaaa;
+    }
 </style>
-<div class="container">
-    <div class="tables-container">
-        <div class="leaderboard-table">
-            <center>
-                <h2 style="color: white; background-color: black; border-radius: 15px;">Leaderboard</h2>
-            </center>
-            <table class="table" style="font-family: verdana;">
-                <thead>
-                    <tr style="color: white;">
-                        <th><center>Overall Rank</center></th>
-                        <th><center>Username</center></th>
-                        <th><center>Rating Score</center></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for student in leaderboard[:20] %}
-                    <tr style="color: white;">
-                        <td><center>{{student['placement']}}</center></td>
-                        <td><center><a style= "color: white;" href="{{url_for('index_views.student_profile_by_name', name=student['student'])}}">{{ student['student']}}</a></center></td>
-                        <td><center>{{'%0.2f' % student['rating score']|float}}</center></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
+
+<div class="leaderboard-container">
+    <h2 class="leaderboard-title">Leaderboard</h2>
+    <table class="leaderboard-table">
+        <thead>
+            <tr>
+                <th>Overall Rank</th>
+                <th>Username</th>
+                <th>Rating Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if leaderboard %}
+                {% for student in leaderboard[:50] %}
+                <tr>
+                    <td>{{ student['placement'] }}</td>
+                    <td>
+                        <a href="{{ url_for('index_views.student_profile_by_name', name=student['student']) }}">
+                            {{ student['student'] }}
+                        </a>
+                    </td>
+                    <td>{{ '%0.2f' % student['rating score']|float }}</td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="3" class="leaderboard-empty">No data available</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
 </div>
+
 <div style="padding: 20px;"></div>
 {% endblock %}
