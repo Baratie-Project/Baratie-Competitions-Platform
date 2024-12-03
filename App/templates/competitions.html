@@ -5,6 +5,10 @@
 {{ super() }}
 
 {% block content %}
+<head>
+    <!-- Add this to the head section -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+</head>
 
 <style>
 
@@ -26,7 +30,7 @@
         width: 325px;
         /* background-color: #f0f0f0; */
         /* border: 1px solid #ccc; */
-        border-radius: 8px;
+        border-radius: 20px;
         overflow: hidden;
         box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
         margin: 20px;
@@ -38,7 +42,7 @@
     }
 
     .card:hover {
-        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+        box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
     }
 
     .card a {
@@ -54,31 +58,29 @@
     } */
 
 </style>
-<div style="display: flex;">
-    <div>
-        <center><h2 style="margin-left: 50px; color: white;">Competitions</h2></center>
+<div style="display: flex; align-items: center; justify-content: center;">
+    <!-- Center the heading -->
+    <div style="text-align: center;">
+        <h2 style="font-family: 'Poppins', sans-serif; color: white; margin: 20;">Competitions</h2>
     </div>
+
+    <!-- Conditional button for moderators -->
     {% if session['user_type'] == 'moderator' %}
     <div>
-        <button type="button" style="padding: 5px; margin-left: 50px; margin-top: 50px; background-color: black; height: 35px; border-radius: 15px; font-family: helvetica;">
-            <a style="color: white;" href="{{url_for('comp_views.create_comp_page')}}">Create Competition</a>
+        <button type="button" style="padding: 5px 15px; margin-left: 20px; background-color: black; height: 40px; border-radius: 15px; border: none; cursor: pointer;">
+            <a style="color: white; text-decoration: none; font-family: 'Poppins', sans-serif;" href="{{url_for('comp_views.create_comp_page')}}">Create Competition</a>
         </button>
     </div>
     {% endif %}
 </div>
 
-
 <div class="competitions-card">
-    
     {% for competition in competitions[::-1] %}
-        
         <div class="card" style="background-color: black; color: white; font-family: helvetica;">
             <a style="color: white;" href="{{url_for('comp_views.competition_details', id=competition.id)}}">
-                <center>
-                    <div style="padding-bottom: 15px; padding-top: 10px; outline: solid white; background-color: #343A40;">
-                        <h3 style="color: white; font-family: optima;">{{competition.name}}</h3>
+                    <div style="display: flex; justify-content: center; align-items: center; height: 80px; border-radius: 10px; outline: solid white; background-color: #343A40; font-family: 'Poppins', sans-serif;">
+                        <h3 style="color: white; font-family: 'Poppins', sans-serif; font-weight: 500; margin: 0;">{{competition.name}}</h3>
                     </div>
-                </center>
                 <div>
                     <p><strong>Date: </strong>{{competition.date.strftime("%d %B %Y")}}</p>
                     <p><strong>Location: </strong>{{competition.location}}</p>
@@ -94,9 +96,7 @@
                 </div>
             </a>
         </div>
-    
     {% endfor %}
-
 </div>
  
 {% endblock %}
