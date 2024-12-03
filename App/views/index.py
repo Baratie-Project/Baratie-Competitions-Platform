@@ -1,8 +1,7 @@
-from flask import Blueprint, redirect, render_template, request, send_from_directory, jsonify, session
+from flask import Blueprint, redirect, render_template, request, send_from_directory, jsonify, session, url_for
 from flask_jwt_extended import jwt_required, current_user as jwt_current_user
 from flask_login import login_required, login_user, current_user, logout_user
 from App.models import db
-from App.models.update_leaderboard_command import UpdateLeaderboardCommand
 from App.controllers import *
 import csv
 
@@ -14,14 +13,30 @@ def home_page():
 
 @index_views.route('/leaderboard', methods=['GET'])
 def leaderboard_page():
-    print(display_rankings())
     return render_template('leaderboard.html', leaderboard=display_rankings(), user=current_user)#, competitions=get_all_competitions(), moderators=get_all_moderators())
+
+
+@index_views.route('/view_snapshot/<int:snapshot_id>', methods=['GET'])
+def view_snapshot(snapshot_id):
+    # Fetch the snapshot rankings using the given ID
+    snapshot_rankings = execute_get_leaderboard_snapshot_command(snapshot_id)  # Replace this with your actual query
+
+    if not snapshot_rankings:
+        return redirect(url_for('index_views.leaderboard_page'))
+
+    # Render the leaderboard.html template with the snapshot rankings
+    return render_template(
+        'leaderboard.html',
+        leaderboard=snapshot_rankings,
+        user=current_user
+    )
+
 
 @index_views.route('/student/<string:username>/ranking', methods=['GET'])
 def student_ranking(username):
     student = get_student_by_username(username)
     if not student:
-        return render_template('leaderboard.html')
+        return redirect(url_for('index_views.leaderboard_page'))
 
     # Sort historical ranking by timestamp to ensure chronological order
     sorted_ranking = sorted(student.historical_ranking, key=lambda x: x.timestamp)
@@ -29,8 +44,9 @@ def student_ranking(username):
     # Prepare ranking history with index and timestamp
     ranking_history = [
         {
+            "snapshot_id" : record.leaderboard_snapshot_id,
             "rank": record.rank,
-            "index": index + 1,  # Use 1-based indexing
+            "index": index + 1,
             "timestamp": record.timestamp.strftime("%b/%d/%Y %H:%M")
         }
         for index, record in enumerate(sorted_ranking)
