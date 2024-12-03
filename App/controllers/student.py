@@ -147,3 +147,16 @@ def display_rankings():
         print(f'{position["placement"]}\t{position["student"]}\t{position["rating score"]}')
     
     return leaderboard
+
+def view_ranking_history(student_id):
+    student = get_student(student_id)
+    if not student:
+        print("Student cannot be found")
+        return
+    
+    rank_history = student.historical_ranking
+
+    for rank in rank_history:
+        print(f'\nRank: {rank.rank}\nDate: {rank.timestamp.strftime("%Y-%m-%d")}\n')
+
+    return rank_history

@@ -4,13 +4,12 @@ from .leaderboard_snapshot import LeaderboardSnapshot
 from .notification import Notification  # Assuming Notification is already defined
 from datetime import datetime
 import json
-
+from .command import Command
 
 class UpdateLeaderboardCommand(Command):
-    def __init__(self, leaderboard):
-        self.leaderboard = leaderboard
-        self.snapshot_id = None
-
+    __tablename__ = 'update_leaderboard_command'
+    id = db.Column(db.Integer, primary_key=True)
+    
     def execute(self):
         try:
             students = Student.query.order_by(Student.rating_score.desc()).all()

@@ -1,4 +1,5 @@
 import csv
+from App.models.update_leaderboard_command import UpdateLeaderboardCommand
 import click, pytest, sys
 from flask import Flask
 from datetime import datetime, date
@@ -8,7 +9,6 @@ from flask.cli import with_appcontext, AppGroup
 from App.database import db, get_migrate
 from App.main import create_app
 from App.controllers import *
-
 
 # This commands file allow you to create convenient CLI commands for testing controllers
 
@@ -70,7 +70,9 @@ def initialize():
         for competition in reader:
             if competition['comp_name'] != 'TopCoder':
                 update_ratings(competition['mod_name'], competition['comp_name'])
-                update_rankings()
+                #update_rankings()
+                update_leaderboard_command = UpdateLeaderboardCommand()
+                update_leaderboard_command.execute()
             #db.session.add(comp)
         #db.session.commit()
     
@@ -161,6 +163,11 @@ def display_student_info_command(username):
 @click.argument("username", default="stud1")
 def display_notifications_command(username):
     print(display_notifications(username))
+
+@student_cli.command("rank-history", help="View ranking history")
+@click.argument("id")
+def display_ranking_history(id):
+    view_ranking_history(id)
 
 app.cli.add_command(student_cli)
 
