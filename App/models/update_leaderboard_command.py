@@ -8,7 +8,6 @@ from .command import Command
 
 class UpdateLeaderboardCommand(Command):
     __tablename__ = 'update_leaderboard_command'
-    id = db.Column(db.Integer, primary_key=True)
     
     def execute(self):
         try:
@@ -41,6 +40,7 @@ class UpdateLeaderboardCommand(Command):
                 # Prepare snapshot data
                 student_data = {
                     "student_id": student.id,
+                    "username": student.username,
                     "rating_score": student.rating_score,
                     "curr_rank": student.curr_rank
                 }

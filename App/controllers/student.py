@@ -1,3 +1,4 @@
+from App.controllers.command import execute_get_current_leaderboard_command, execute_update_leaderboard_command
 from App.database import db
 from App.models import Student, Competition, Notification, CompetitionTeam
 
@@ -123,29 +124,8 @@ def update_rankings():
     return leaderboard
 
 def display_rankings():
-    students = get_all_students()
-
-    students.sort(key=lambda x: (x.rating_score, x.comp_count), reverse=True)
-
-    leaderboard = []
-    count = 1
-    curr_high = students[0].rating_score
-    curr_rank = 1
-        
-    for student in students:
-        if curr_high != student.rating_score:
-            curr_rank = count
-            curr_high = student.rating_score
-
-        if student.comp_count != 0:
-            leaderboard.append({"placement": curr_rank, "student": student.username, "rating score":student.rating_score})
-            count += 1
-
+    leaderboard = execute_get_current_leaderboard_command()
     print("Rank\tStudent\tRating Score")
-
-    for position in leaderboard:
-        print(f'{position["placement"]}\t{position["student"]}\t{position["rating score"]}')
-    
     return leaderboard
 
 def view_ranking_history(student_id):
