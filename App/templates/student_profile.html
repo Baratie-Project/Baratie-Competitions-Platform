@@ -2,121 +2,132 @@
 {% block title %}Profile{% endblock %}
 {% block page %}UWI Competitions Platform{% endblock %}
 
-{{ super() }}
-
 {% block content %}
-
 <style>
-.notifications {
-    border: 5px solid #ccc; 
-    padding: 10px; 
-    margin-top: 10px;
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #343a40;
 }
 
-.notifications ul {
-    list-style-type: none;
-}
-
-.notifications li {
-    margin-bottom: 15px; 
-}
-
-.headers {
-    width: 100%;
+.navbar {
+    background-color: #343A40;
     display: flex;
+    justify-content: space-between;
+    padding: 1.5rem 3rem;
+    color: white;
+    font-size: 1.5rem;
 }
 
-h1 {
-    padding: 2vw 0vw 0vw 2vw;
-    margin: 0vw;
-    /*color: white;*/
+.navbar a {
+    color: white;
+    text-decoration: none;
+    margin: 0 1.5rem;
+}
+
+.navbar a:hover {
+    text-decoration: underline;
+}
+
+.profile-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 3rem;
+    max-width: 1200px;
+    margin: auto;
 }
 
 .profile-info {
-    width: 100%;
-    padding: 2vw;
+    flex: 1;
+    text-align: center;
+    background-color: #ffffff;
+    border-radius: 20px;
+    padding: 2rem;
+    margin-right: 2rem;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.profile-info img {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    margin-bottom: 2rem;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.profile-info .name {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 2rem;
+    color: #333;
+}
+
+.profile-stats {
     display: flex;
+    justify-content: center;
+    margin-top: 2rem;
 }
 
-.student-info {
-    border-radius: 25px;
-    width: 30%;
-    outline-style: solid;
-    background-color: black;
-    /*background-image: linear-gradient(#61677A, #000000);
-    color: white;*/
-}
-
-.student-image {
+.profile-stats .stat {
     background-color: #343A40;
-    border-radius: 25px;
-    padding: 0vw;
-}
-
-.student-username {
     color: white;
+    padding: 2rem;
+    margin: 0 1rem;
+    border-radius: 15px;
+    width: 150px;
     text-align: center;
-    padding: 0vw;
-    font-size: 3vw;
+    font-size: 1.5rem;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.results-info {
-    width: 70%;
+.participations {
+    flex: 2;
+    background-color: #ffffff;
+    color: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
 }
 
-.ranking-info {
+.participations h3 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    color: #333;
+}
+
+.participations ul {
+    list-style: none;
+    padding: 0;
+    max-height: 400px;
+    overflow-y: auto;
+    font-size: 1.5rem;
+}
+
+.participations li {
+    background-color: #343a40;
+    margin: 1rem 0;
+    padding: 1.5rem;
+    border-radius: 10px;
     display: flex;
-    height: 12vw;
-    margin: auto;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.2rem;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.rank {
-    border-radius: 25px;
-    width: 25%;
-    outline-style: solid;
-    margin: auto;
-    text-align: center;
-    font-size: 2vw;
-    color: white;
-    background-color: black;
-    /*background-image: linear-gradient(#61677A, #000000);*/
+.participations a {
+    color: #6bb3ff;
+    text-decoration: underline;
+    font-weight: bold;
 }
 
-.rating-score {
-    border-radius: 25px;
-    width: 25%;
-    outline-style: solid;
-    margin: auto;
-    text-align: center;
-    font-size: 2vw;
-    color: white;
-    background-color: black;
-    /*background-image: linear-gradient(#61677A, #000000);*/
-}
-
-.competition-list {
-    width: 95%;
-    margin: auto;
-    margin-top: 1.5vw;
-    outline-style: solid;
-    font-size: 2vw;
-    overflow-y: scroll;
-    height: 20vw;
-    color: white;
-    background-color: black;
-    /*background-image: radial-gradient(#61677A, #000000);*/
-}
-
-.competition-list li {
-    display: flex;
-    padding-left: 2vw;
-    margin: 2vw;
-    font-size: 1.5vw;
-    outline-style: solid;
-    border-radius: 25px;
-    color: white;
-    background-color: #343A40;
-    /*background-image: linear-gradient(#61677A, #000000);*/
+.participations a:hover {
+    text-decoration: none;
+    color: #0056b3;
 }
 
 .sidepanel {
@@ -163,7 +174,7 @@ h1 {
     margin-right: 0vw;
 }
 
-.sidepanel-content ul li{
+.sidepanel-content ul li {
     color: white;
     background-color: #343A40;
     border-radius: 25px;
@@ -172,67 +183,39 @@ h1 {
     padding: 1vw;
     outline-style: solid;
 }
+.headers {
+    width: 100%;
+    display: flex;
+    align-items: center; /* Ensure elements align properly */
+    margin: 0; /* Remove top and bottom margins */
+    padding: 0; /* Remove padding */
+}
 
-@media only screen and (max-width: 700px) {
-    .headers {
-        display: block;
-    }
-
-    h1 {
-        text-align: center;
-    }
-    
-    .profile-info {
-        display: block;
-    }
-
-    .student-info {
-        width: 90%;
-        margin: auto;
-    }
-
-    .results-info {
-        width: 90%;
-    }
-
-    .student-username {
-        font-size: 10vw;
-    }
-
-    .results-info {
-        width: 100%;
-    }
-
-    .ranking-info {
-        height: 30vw;
-    }
-
-    .rank {
-        width: 40%;
-        font-size: 5vw;
-    }
-
-    .rating-score {
-        width: 40%;
-        font-size: 5vw;
-    }
-
-    .competition-list {
-        font-size: 5vw;
-        height: 50vw;
-        margin-top: 5vw;
-    }
-
-    .competition-list li {
-        font-size: 5vw;
-    }
+h2 {
+    margin: 0; /* Remove default margin on the heading */
+    padding: 0; /* Remove extra padding */
+    color: white;
+    padding-left: 50px; /* Adjust only the left padding for spacing */
+}
+.center-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #343a40; /* Optional for better contrast */
+    margin: 0;
+    padding: 0;
 }
 </style>
-    
+
+<h2 style="color: white; text-align: center;">
+    <a href="{{ url_for('index_views.student_ranking', username=student.username) }}" 
+       style="font-size: 3rem; color: white; text-decoration: underline; font-weight: bold;">
+        View Historical Ranking
+    </a>
+</h2>
+
 <div class="headers">
-    <div>
-        <h2 style="color: white; padding-left: 50px;">Profile</h2>
-    </div>
+
 
     <div id="sidepanel" class="sidepanel" style="font-family: helvetica;">
         <div class="sidepanel-header">
@@ -251,63 +234,49 @@ h1 {
             </ul>
         </div>
     </div>
-    {% if user.is_authenticated and user.id==student.id and session['user_type'] == 'student' %}
+    {% if user.is_authenticated and user.id == student.id and session['user_type'] == 'student' %}
     <div class="openbutton">
-        <img class="mail-icon" src="{{url_for('static', filename='mailIcon.jpg')}}" alt="Notifications" onclick="openNav()">
+        <img class="mail-icon" src="{{ url_for('static', filename='mailIcon.jpg') }}" alt="Notifications" onclick="openNav()">
     </div>
     {% endif %}
 </div>
-<div class="profile-info" style="font-family: helvetica;">
-    <div class="student-info">
-        <div class="student-image">
-            <center><img src="{{url_for('static', filename='defaultProfilePicture.png')}}" alt="Student Photo" width="80%"></center>
+
+<div class="profile-container">
+    <div class="profile-info">
+        <img src="{{ url_for('static', filename='defaultProfilePicture.png') }}" alt="Profile Picture">
+        <div class="name">{{ student.username }}</div>
+        <div class="profile-stats">
+            <div class="stat">
+                <p>Rank</p>
+                <p>{{ student.curr_rank if student.curr_rank > 0 else 'Unranked' }}</p>
+            </div>
+            <div class="stat">
+                <p>Rating</p>
+                <p>{{ '%.2f' % student.rating_score }}</p>
+            </div>
         </div>
-        <div class="student-username">
-            <p>{{student.username}}</p>
-        </div> 
     </div>
 
-    <div class="results-info">
-        <span class="ranking-info">
-            <div class="rank">
-                <p>Rank</p>
-                {% if student.curr_rank == 0 %}
-                <p>Unranked</p>
-                {% else %}
-                <p>{{student.curr_rank}}</p>
-                {% endif %}
-            </div>
-            <div class="rating-score">
-                <p>Rating Score</p>
-                <p>{{'%0.2f' % student.rating_score|float}}</p>
-            </div>
-        </span>
-        <div style="color: white;" class="competition-list">
-            <center><p style="font-family: optima;">Participations</p></center>
-            <ul>
-                {% for competition in competitions[::-1] %}
-                    <li>
-                        <div style="width: 90%; text-align: left;">
-                            <p style="margin: 2vw;">{{competition}}</p>
-                        </div>
-                        <div style="width: 10%; text-align: right; margin: 2vw;">
-                            <a style="color: white; text-decoration: underline;" href="{{url_for('comp_views.competition_details_by_name', name=competition)}}">Details</a>
-                        </div>
-                    </li>
-                {% endfor %}
-            </ul>
-        </div>
-    </div>
-</div>
-    
-    <!---
-    <div class="notifications">
-        <h5>Notifications:</h5>
+    <div class="participations">
+        <h3 style="font-weight: bold;">Participations</h3>
         <ul>
-            {% for notification in notifications %}
-                <li>{{ notification.message }}</li>
+            {% for competition in competitions %}
+                <li>
+                    <span>{{ competition }}</span>
+                    <a href="{{ url_for('comp_views.competition_details_by_name', name=competition) }}">Details</a>
+                </li>
             {% endfor %}
         </ul>
     </div>
-    -->
+</div>
+
+<script>
+    function openNav() {
+        document.getElementById("sidepanel").style.width = "300px";
+    }
+
+    function closeNav() {
+        document.getElementById("sidepanel").style.width = "0";
+    }
+</script>
 {% endblock %}
