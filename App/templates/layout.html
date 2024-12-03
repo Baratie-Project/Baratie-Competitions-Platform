@@ -11,53 +11,37 @@
   </head>
 
   <body>
-    
     <nav class="black">
       <div class="nav-wrapper">
         <a style="font-family: copperplate;" href="#!" class="brand-logo center">{% block page %}{% endblock %}</a>
         <div class="nav-wrapper">
-            <ul id="nav-mobile" class="left" style="font-family: lucida bright;">
-                <li><a href="/leaderboard">Leaderboard</a></li>
-                <li><a href="/competitions">Competitions</a></li>
-            </ul>
-            <ul id="nav-mobile" class="right" style="font-family: lucida bright;">
-              {% if user.is_authenticated %}
-                <li><a href="/logout">Log Out</a></li>
-                <li><a href="/profile">Profile</a></li>
-              {% else %}
-                <li><a href="/signup">Sign Up</a></li>
-                <li><a href="/login">Log In</a></li>
-              {% endif %}
-            </ul>
+          <ul id="nav-mobile" class="left" style="font-family: lucida bright;">
+            <li><a href="/leaderboard">Leaderboard</a></li>
+            <li><a href="/competitions">Competitions</a></li>
+          </ul>
+          <ul id="nav-mobile" class="right" style="font-family: lucida bright;">
+            {% if user.is_authenticated %}
+              <li><a href="/logout">Log Out</a></li>
+              <li><a href="/profile">Profile</a></li>
+            {% else %}
+              <li><a href="/signup">Sign Up</a></li>
+              <li><a href="/login">Log In</a></li>
+            {% endif %}
+          </ul>
         </div>
       </div>
     </nav>
-    <!--
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      {% for category, message in messages %}
-        {% if category == 'error' %}
-        <div style="background-color: black; color: white;" class="alert">
-          <span class="closebtn">
-            {{ message }}
-            <button type="button" class="close" oncick="closeMessage()">X</button>
-          </span>
-        </div>
-        {% else %}
-        <div class="alert alert-success alter-dismissable fade show" role="alert">
-          {{ message }}
-          <button type="button" class="close" data-dismiss="alert">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        {% endif %}
-      {% endfor %}
-    {% endif %}
-    {% endwith %}
-    -->
+
     {% block content %}{% endblock %}
     
+    <!-- Materialize Framework -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-    <script src="{{url_for('static', filename='main.js')}}"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js Date Adapter -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <!-- Custom Scripts -->
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+    
   </body>
 </html>

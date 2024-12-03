@@ -5,7 +5,7 @@ from flask import Flask
 from datetime import datetime, date
 
 from flask.cli import with_appcontext, AppGroup
-
+from App.models.update_leaderboard_command import UpdateLeaderboardCommand
 from App.database import db, get_migrate
 from App.main import create_app
 from App.controllers import *
@@ -224,7 +224,8 @@ def add_results_command(mod_name, comp_name, team_name, student1, student2, stud
 @click.argument("comp_name", default="comp1")
 def update_rankings_command(mod_name, comp_name):
     update_ratings(mod_name, comp_name)
-    update_rankings()
+    update_leaderboard_command = UpdateLeaderboardCommand()
+    update_leaderboard_command.execute()
 
 @mod_cli.command("rankings", help="Displays overall rankings")
 def display_rankings_command():
