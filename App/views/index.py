@@ -2,6 +2,7 @@ from flask import Blueprint, redirect, render_template, request, send_from_direc
 from flask_jwt_extended import jwt_required, current_user as jwt_current_user
 from flask_login import login_required, login_user, current_user, logout_user
 from App.models import db
+from App.models.update_leaderboard_command import UpdateLeaderboardCommand
 from App.controllers import *
 import csv
 
@@ -14,6 +15,32 @@ def home_page():
 @index_views.route('/leaderboard', methods=['GET'])
 def leaderboard_page():
     return render_template('leaderboard.html', leaderboard=display_rankings(), user=current_user)#, competitions=get_all_competitions(), moderators=get_all_moderators())
+
+@index_views.route('/student/<string:username>/ranking', methods=['GET'])
+def student_ranking(username):
+    student = get_student_by_username(username)
+    if not student:
+        return render_template('leaderboard.html')
+
+    # Sort historical ranking by timestamp to ensure chronological order
+    sorted_ranking = sorted(student.historical_ranking, key=lambda x: x.timestamp)
+
+    # Prepare ranking history with index and timestamp
+    ranking_history = [
+        {
+            "rank": record.rank,
+            "index": index + 1,  # Use 1-based indexing
+            "timestamp": record.timestamp.strftime("%b/%d/%Y %H:%M")
+        }
+        for index, record in enumerate(sorted_ranking)
+    ]
+
+    return render_template(
+        'student_ranking.html',
+        student=student,
+        ranking_history=ranking_history,
+        user=current_user
+    )
 
 @index_views.route('/init', methods=['GET'])
 def init():
@@ -146,7 +173,9 @@ def init():
         for competition in reader:
             if competition['comp_name'] != 'TopCoder':
                 update_ratings(competition['mod_name'], competition['comp_name'])
-                update_rankings()
+                # update_rankings()
+                update_command = UpdateLeaderboardCommand()
+                update_command.execute()
             #db.session.add(comp)
         #db.session.commit()
     
@@ -335,7 +364,8 @@ def init_postman():
 
         for competition in reader:
             update_ratings(competition['mod_name'], competition['comp_name'])
-            update_rankings()
+            update_leaderboard_command = UpdateLeaderboardCommand()
+            update_leaderboard_command.execute()
             #db.session.add(comp)
         #db.session.commit()
     

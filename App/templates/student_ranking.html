@@ -1,0 +1,91 @@
+{% extends "layout.html" %}
+{% block title %}{{ student.username }} - Historical Ranking{% endblock %}
+
+
+{% block content %}
+<div class="container">
+    <h2 style="color: white; background-color: black; border-radius: 15px; text-align: center;">
+        Historical Ranking for {{ student.username }}
+    </h2>
+
+    <div>
+        <canvas id="rankingChart" style="width: 100%; height: 500px;"></canvas>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ranking_history = JSON.parse('{{ ranking_history|tojson|safe }}');
+
+        const data = ranking_history.map(record => ({
+            x: record.index,
+            y: record.rank,
+            timestamp: record.timestamp
+        }));
+
+        const ctx = document.getElementById('rankingChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                datasets: [{
+                    label: '{{ student.username }} Ranking',
+                    data: data,
+                    fill: false,
+                    borderColor: '#FF4500',
+                    tension: 0.1,
+                    pointRadius: 6, // Set point size
+                    pointHoverRadius: 8 // Set hover effect size
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        type: 'linear',
+                        title: {
+                            display: true,
+                            text: 'Number of Rank Changes',
+                            color: '#FFFFFF' // Change X-axis title color
+                        },
+                        ticks: {
+                            color: '#FFFFFF' // Change X-axis label color
+                        },
+                        grid: {
+                            color: '#77ff77' // X-axis grid line color
+                        }
+                    },
+                    y: {
+                        reverse: true,
+                        title: {
+                            display: true,
+                            text: 'Rank',
+                            color: '#FFFFFF' // Change Y-axis title color
+                        },
+                        ticks: {
+                            color: '#FFFFFF' // Change Y-axis label color
+                        },
+                        grid: {
+                            color: '#6a9955' // X-axis grid line color
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#FFFFFF' // Change legend label color
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Rank #${context.raw.y} at ${context.raw.timestamp}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
