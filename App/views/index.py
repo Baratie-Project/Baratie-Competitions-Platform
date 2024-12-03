@@ -14,6 +14,7 @@ def home_page():
 
 @index_views.route('/leaderboard', methods=['GET'])
 def leaderboard_page():
+    print(display_rankings())
     return render_template('leaderboard.html', leaderboard=display_rankings(), user=current_user)#, competitions=get_all_competitions(), moderators=get_all_moderators())
 
 @index_views.route('/student/<string:username>/ranking', methods=['GET'])

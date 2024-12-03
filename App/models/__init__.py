@@ -7,3 +7,7 @@ from .competition_moderator import *
 from .competition_team import *
 from .student_team import *
 from .notification import *
+from .get_current_leaderboard_command import *
+from .update_leaderboard_command import *
+from .ranking_history import *
+from .command import *
