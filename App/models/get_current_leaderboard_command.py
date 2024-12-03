@@ -7,7 +7,7 @@ import json
 
 
 class GetCurrentLeaderboard(Command):
-
+    __tablename__ = 'get_current_leaderboard'
     def execute(self):
         try:
             # Get the most recent leaderboard snapshot

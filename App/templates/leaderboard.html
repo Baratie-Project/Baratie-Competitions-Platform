@@ -101,11 +101,11 @@
         <tbody>
             {% if leaderboard %}
                 {% for student in leaderboard[:50] %}
-                <tr style="color: white;">
-                    <td><center>{{ student['curr_rank'] }}</center></td>
-                    <td><center><a style="color: #00d1ff;" href="{{ url_for('index_views.student_profile_by_name', name=student['username']) }}">{{ student['username'] }}</a></center></td>
-                    <td><center>{{ '%0.2f' % student['rating_score'] }}</center></td>
-                </tr>
+                    <tr style="color: white;">
+                        <td><center>{{ student['curr_rank'] }}</center></td>
+                        <td><center><a style="color: #00d1ff;" href="{{ url_for('index_views.student_profile_by_name', name=student['username']) }}">{{ student['username'] }}</a></center></td>
+                        <td><center>{{ '%0.2f' % student['rating_score'] }}</center></td>
+                    </tr>
                 {% endfor %}
             {% else %}
                 <tr>

@@ -21,11 +21,12 @@
         const data = ranking_history.map(record => ({
             x: record.index,
             y: record.rank,
+            snapshotId: record.snapshot_id,
             timestamp: record.timestamp
         }));
 
         const ctx = document.getElementById('rankingChart').getContext('2d');
-        new Chart(ctx, {
+        const chart = new Chart(ctx, {
             type: 'line',
             data: {
                 datasets: [{
@@ -34,8 +35,8 @@
                     fill: false,
                     borderColor: '#FF4500',
                     tension: 0.1,
-                    pointRadius: 6, // Set point size
-                    pointHoverRadius: 8 // Set hover effect size
+                    pointRadius: 6,
+                    pointHoverRadius: 8
                 }]
             },
             options: {
@@ -46,13 +47,13 @@
                         title: {
                             display: true,
                             text: 'Number of Rank Changes',
-                            color: '#FFFFFF' // Change X-axis title color
+                            color: '#FFFFFF'
                         },
                         ticks: {
-                            color: '#FFFFFF' // Change X-axis label color
+                            color: '#FFFFFF'
                         },
                         grid: {
-                            color: '#77ff77' // X-axis grid line color
+                            color: '#77ff77'
                         }
                     },
                     y: {
@@ -60,20 +61,20 @@
                         title: {
                             display: true,
                             text: 'Rank',
-                            color: '#FFFFFF' // Change Y-axis title color
+                            color: '#FFFFFF'
                         },
                         ticks: {
-                            color: '#FFFFFF' // Change Y-axis label color
+                            color: '#FFFFFF'
                         },
                         grid: {
-                            color: '#6a9955' // X-axis grid line color
+                            color: '#6a9955'
                         }
                     }
                 },
                 plugins: {
                     legend: {
                         labels: {
-                            color: '#FFFFFF' // Change legend label color
+                            color: '#FFFFFF'
                         }
                     },
                     tooltip: {
@@ -83,9 +84,19 @@
                             }
                         }
                     }
+                },
+                onClick: (e, activeElements) => {
+                    if (activeElements.length > 0) {
+                        const dataIndex = activeElements[0].index;
+                        const snapshotId = data[dataIndex].snapshotId;
+
+                        // Redirect to the view_snapshot route
+                        window.location.href = `/view_snapshot/${snapshotId}`;
+                    }
                 }
             }
         });
     });
 </script>
+
 {% endblock %}
