@@ -1,85 +1,32 @@
 from App.database import db
+from App.models.command import Command
 from .student import Student
 from .leaderboard_snapshot import LeaderboardSnapshot
-from .notification import Notification  # Assuming Notification is already defined
 from datetime import datetime
 import json
-from .command import Command
 
-class UpdateLeaderboardCommand(Command):
-    __tablename__ = 'update_leaderboard_command'
-    
+
+class GetCurrentLeaderboard(Command):
+    __tablename__ = 'get_current_leaderboard'
     def execute(self):
         try:
-            # Query all students ordered by rating
-            students = Student.query.order_by(Student.rating_score.desc()).all()
+            # Get the most recent leaderboard snapshot
+            latest_snapshot = LeaderboardSnapshot.query.order_by(LeaderboardSnapshot.timestamp.desc()).first()
 
-            # Create the current leaderboard
-            rank = 1
-            snapshot_data = []
+            if not latest_snapshot:
+                print("No leaderboard snapshot available.")
+                return None
 
-            # Keep track of the original ranks before making updates
-            original_ranks = {student.id: student.curr_rank for student in students}
+            # Retrieve leaderboard data from the snapshot
+            leaderboard_data = latest_snapshot.get_leaderboard_data()
 
-            for student in students:
-                if student.curr_rank != rank:
-                    # Update ranks if there's a change
-                    student.prev_rank = student.curr_rank
-                    student.curr_rank = rank
+            # Display or return the leaderboard data
+            print(f"Leaderboard (as of {latest_snapshot.timestamp.strftime('%Y-%m-%d %H:%M:%S')}):")
+            for entry in leaderboard_data:
+                print(f"Rank {entry['curr_rank']}: Student ID {entry['student_id']} - Score {entry['rating_score']}")
 
-                    # Generate a notification message
-                    if student.prev_rank == 0:
-                        message = f'RANK : {student.curr_rank}. Congratulations on your first rank!'
-                    elif student.curr_rank < student.prev_rank:
-                        message = f'RANK : {student.curr_rank}. Congratulations! Your rank has gone up!'
-                    else:
-                        message = f'RANK : {student.curr_rank}. Oh no! Your rank has gone down.'
-
-                    # Create a Notification instance and add it to the student
-                    notification = Notification(student_id=student.id, message=message)
-                    student.add_notification(notification)
-
-                # Prepare snapshot data
-                student_data = {
-                    "student_id": student.id,
-                    "username": student.username,
-                    "rating_score": student.rating_score,
-                    "curr_rank": student.curr_rank
-                }
-                snapshot_data.append(student_data)
-
-                # Increment rank for the next student
-                rank += 1
-
-                # Save student changes to the database
-                db.session.add(student)
-
-            # Commit all student updates
-            db.session.commit()
-
-            # Take a snapshot
-            snapshot_id = self.take_snapshot(snapshot_data)
-            if snapshot_id is None:
-                raise Exception("Snapshot creation failed.")
-
-            # Save rank history ONLY for students whose rank changed
-            for student in students:
-                original_rank = original_ranks[student.id]  # Retrieve the original rank
-                if student.curr_rank != original_rank:
-                    student.save_rank_history(rank=student.curr_rank, leaderboard_snapshot_id=snapshot_id)
+            return leaderboard_data
 
         except Exception as e:
-            db.session.rollback()
-            print(f"Error updating leaderboard: {e}")
-
-
-    def take_snapshot(self, snapshot_data):
-        try:
-            snapshot = LeaderboardSnapshot(leaderboard_data=snapshot_data)
-            db.session.add(snapshot)
-            db.session.commit()
-            return snapshot.id
-        except Exception as e:
-            db.session.rollback()
-            print(f"Error saving snapshot: {e}")
+            print(f"Error retrieving leaderboard: {e}")
             return None

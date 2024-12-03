@@ -28,7 +28,9 @@ class UpdateLeaderboardCommand(Command):
                     student.curr_rank = rank
 
                     # Generate a notification message
-                    if student.curr_rank < student.prev_rank:
+                    if student.prev_rank == 0:
+                        message = f'RANK : {student.curr_rank}. Congratulations on your first rank!'
+                    elif student.curr_rank < student.prev_rank:
                         message = f'RANK : {student.curr_rank}. Congratulations! Your rank has gone up!'
                     else:
                         message = f'RANK : {student.curr_rank}. Oh no! Your rank has gone down.'
