@@ -54,7 +54,8 @@ class Student(User):
             "username": self.username,
             "rating_score": self.rating_score,
             "comp_count": self.comp_count,
-            "curr_rank": self.curr_rank
+            "curr_rank": self.curr_rank,
+            "historical_ranking": self.historical_ranking
         }
 
     def to_dict(self):
@@ -63,7 +64,8 @@ class Student(User):
             "Username": self.username,
             "Rating Score": self.rating_score,
             "Number of Competitions": self.comp_count,
-            "Rank": self.curr_rank
+            "Rank": self.curr_rank,
+            "Historical Rank": self.historical_ranking
         }
 
     def __repr__(self):
