@@ -19,6 +19,7 @@
         /* font-family: sans-serif; */
     }
 
+
     .competitions-card{
         display: flex;
         justify-content: center;
@@ -58,28 +59,26 @@
     } */
 
 </style>
-<div style="display: flex; align-items: center; justify-content: center;">
-    <!-- Center the heading -->
+<div style="display: flex; align-items: center; justify-content: center; background-color: #2c2f31;">
     <div style="text-align: center;">
         <h2 style="font-family: 'Poppins', sans-serif; color: white; margin: 20;">Competitions</h2>
     </div>
 
-    <!-- Conditional button for moderators -->
     {% if session['user_type'] == 'moderator' %}
     <div>
         <button type="button" style="padding: 5px 15px; margin-left: 20px; background-color: black; height: 40px; border-radius: 15px; border: none; cursor: pointer;">
-            <a style="color: white; text-decoration: none; font-family: 'Poppins', sans-serif;" href="{{url_for('comp_views.create_comp_page')}}">Create Competition</a>
+            <a style="color: #00d1ff; text-decoration: none; font-family: 'Poppins', sans-serif;" href="{{url_for('comp_views.create_comp_page')}}">Create Competition</a>
         </button>
     </div>
     {% endif %}
 </div>
 
-<div class="competitions-card">
+<div class="competitions-card" style="background-color: #2c2f31;">
     {% for competition in competitions[::-1] %}
         <div class="card" style="background-color: black; color: white; font-family: helvetica;">
             <a style="color: white;" href="{{url_for('comp_views.competition_details', id=competition.id)}}">
-                    <div style="display: flex; justify-content: center; align-items: center; height: 80px; border-radius: 10px; outline: solid white; background-color: #343A40; font-family: 'Poppins', sans-serif;">
-                        <h3 style="color: white; font-family: 'Poppins', sans-serif; font-weight: 500; margin: 0;">{{competition.name}}</h3>
+                    <div style="display: flex; justify-content: center; align-items: center; height: 80px; border-radius: 10px; outline: solid #00d1ff; background-color: #343A40; font-family: 'Poppins', sans-serif;">
+                        <h3 style="color: #00d1ff; font-family: 'Poppins', sans-serif; font-weight: 500; margin: 0;">{{competition.name}}</h3>
                     </div>
                 <div>
                     <p><strong>Date: </strong>{{competition.date.strftime("%d %B %Y")}}</p>
@@ -88,7 +87,7 @@
                     <p><strong>Max Score: </strong>{{competition.max_score}}</p>
                     <p><strong>Moderators: </strong>
                     {% for moderator in competition.moderators %}
-                        <a style="color: white" href="{{url_for('index_views.moderator_profile', id=moderator.id)}}">
+                        <a style="color: #00d1ff" href="{{url_for('index_views.moderator_profile', id=moderator.id)}}">
                             <p>{{moderator.username}}</p>
                         </a>
                     {% endfor %}

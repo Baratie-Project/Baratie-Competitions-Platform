@@ -5,11 +5,17 @@
 {{ super() }}
 
 {% block content %}
+
+<head>
+  <!-- Add this to the head section -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+</head>
+
 <center>
-  <h2 style="color: white;">Competition Registration</h2>
+  <h2 style="color: white; font-family: 'Poppins', sans-serif">Competition Registration</h2>
 </center>
 
-<main class="container" style="padding: 15px; background-color: black; border-radius: 25px;">
+<main class="container" style="padding: 15px; background-color: black; border-radius: 25px; font-family: 'Poppins', sans-serif">
   <form name="addForm" class="card" method="POST" action="/createcompetition" style="background-color: black; color: white;">
     <div class="card-content" style="font-family: helvetica;">
       <span class="card-title" style="font-family: optima;">Create Competition</span>
