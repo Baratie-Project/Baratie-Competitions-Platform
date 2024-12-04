@@ -803,3 +803,91 @@ class IntegrationTests(unittest.TestCase):
       update_ratings(mod.username, comp2.name)
       update_rankings()
       self.assertListEqual(get_all_competitions_json(), [{"id": 1, "name": "RunTime", "date": "29-03-2024", "location": "St. Augustine", "level": 2, "max_score": 25, "moderators": ["debra"], "teams": ["Runtime Terrors", "Scrum Lords"]}, {"id": 2, "name": "Hacker Cup", "date": "23-02-2024", "location": "Macoya", "level": 1, "max_score": 20, "moderators": ["debra"], "teams": ["Runtime Terrors", "Scrum Lords"]}])
+
+    def test_multiple_moderators_for_competition(self):
+      db.drop_all()
+      db.create_all()
+
+      mod1 = create_moderator("debra", "debrapass")
+      mod2 = create_moderator("robert", "robertpass")
+      comp = create_competition(mod1.username, "RunTime", "29-03-2024", "St. Augustine", 2, 25)
+
+      add_mod(mod1.username, comp.name, mod2.username)
+      competition = Competition.query.filter_by(name="RunTime").first()
+
+      assert competition is not None
+      assert len(competition.moderators) == 2
+      assert mod2 in competition.moderators
+
+    def test_update_and_get_leaderboard(self):
+      db.drop_all()
+      db.create_all()
+
+      student1 = Student(username="student1", password="pass")
+      student2 = Student(username="student2", password="pass")
+      student1.rating_score = 900
+      student2.rating_score = 850
+      db.session.add_all([student1, student2])
+      db.session.commit()
+
+      execute_update_leaderboard_command()
+      leaderboard = execute_get_current_leaderboard_command()
+
+      assert leaderboard is not None
+      assert len(leaderboard) == 2
+      assert leaderboard[0]["student_id"] == student1.id
+      assert leaderboard[1]["student_id"] == student2.id
+    
+    def test_empty_update_leaderboard_command(self):
+      db.drop_all()
+      db.create_all()
+      command = execute_update_leaderboard_command()
+      assert command is not None
+      snapshot = LeaderboardSnapshot.query.first()
+      assert snapshot is not None
+      leaderboard_data = snapshot.get_leaderboard_data()
+      assert len(leaderboard_data) == 0, "Snapshot contains unexpected data"
+
+    def test_leaderboard_ranking_with_identical_scores(self):
+      db.drop_all()
+      db.create_all()
+
+      student1 = create_student("james", "jamespass")
+      student2 = create_student("steven", "stevenpass")
+      student1.rating_score = 900
+      student2.rating_score = 900
+      student1.comp_count = 5
+      student2.comp_count = 3
+      db.session.add_all([student1, student2])
+      db.session.commit()
+
+      execute_update_leaderboard_command()
+      leaderboard = execute_get_current_leaderboard_command()
+
+      assert leaderboard[0]["student_id"] == student1.id
+      assert leaderboard[1]["student_id"] == student2.id
+
+    def test_notification_for_unchanged_rank(self):
+      db.drop_all()
+      db.create_all()
+
+      mod = create_moderator("debra", "debrapass")
+      comp = create_competition(mod.username, "RunTime", "29-03-2024", "St. Augustine", 2, 25)
+      student1 = create_student("james", "jamespass")
+      student1.rating_score = 900
+      student1.comp_count = 1
+      db.session.add(student1)
+      db.session.commit()
+
+      update_rankings()
+      db.session.refresh(student1)
+
+      notifications = display_notifications(student1.username)
+      assert notifications is not None
+      assert len(notifications["notifications"]) == 1
+      assert "Congratulations on your first rank" in notifications["notifications"][-1]["Notification"]
+
+      update_rankings()
+      notifications = display_notifications(student1.username)
+      assert len(notifications["notifications"]) == 2
+      assert "retained your rank" in notifications["notifications"][-1]["Notification"]
