@@ -29,6 +29,10 @@ class UnitTests(unittest.TestCase):
         user = User("ryan", password)
         assert user.check_password(password)
 
+    def test_invalid_username(self):
+      user = User("", "password123")
+      assert user.username == ""
+
     #Student Unit Tests
     def test_new_student(self):
       db.drop_all()
@@ -49,13 +53,62 @@ class UnitTests(unittest.TestCase):
       expected = {
           "id": fetched_student.id,
           "username": "james",
-          "rating_score": 250,
+          "rating_score": 750,
           "comp_count": 0,
           "curr_rank": 0,
           "historical_ranking": fetched_student.historical_ranking
       }
       self.assertDictEqual(fetched_student.get_json(), expected)
 
+    def test_create_duplicate_student(self):
+      create_student("james", "jamespass")
+      same_user = create_student("james", "jamespass")
+      assert same_user is None 
+
+    def test_get_student_by_id(self):
+      student = create_student("test", "testuser")
+      assert student is not None, "Student creation failed"  
+      fetched_student = get_student(student.id)
+      assert fetched_student is not None, "Fetching student failed"
+      assert fetched_student.username == "test"
+
+    def test_get_all_students(self):
+      create_student("user1", "password1")
+      create_student("user2", "password2")
+      students = get_all_students()
+      assert len(students) >= 2
+
+    def test_update_student_username(self):
+      student = create_student("testuser", "testpassword")
+      updated_student = update_student(student.id, "updateduser")
+      assert updated_student is not None
+      assert updated_student.username == "updateduser"
+
+    def test_update_rankings(self):
+      db.drop_all()
+      db.create_all()
+      student1 = create_student("student1", "password1")
+      student2 = create_student("student2", "password2")
+      student1.rating_score = 300
+      student2.rating_score = 250
+      student1.comp_count = 1  
+      student2.comp_count = 1  
+      db.session.add(student1)
+      db.session.add(student2)
+      db.session.commit()
+
+      leaderboard = update_rankings()
+      assert len(leaderboard) == 2
+      assert leaderboard[0]["placement"] == 1
+      assert leaderboard[0]["student"] == "student1"
+
+    def test_view_ranking_history(self):
+      student = create_student("testuser", "testpassword")
+      student.save_rank_history(1, 1)
+      history = view_ranking_history(student.id)
+      assert history is not None
+      assert len(history) == 1
+      assert history[0].rank == 1
 
     #Moderator Unit Tests
     def test_new_moderator(self):
@@ -70,6 +123,64 @@ class UnitTests(unittest.TestCase):
       mod = Moderator("robert", "robertpass")
       self.assertDictEqual(mod.get_json(), {"id":None, "username": "robert", "competitions": []})
     
+    def test_get_moderator_by_id(self):
+      moderator = Moderator("mod2", "modpass")
+      db.session.add(moderator)
+      db.session.commit()
+      fetched_moderator = Moderator.query.get(moderator.id)
+      assert fetched_moderator is not None
+      assert fetched_moderator.username == "mod2"
+
+    def test_add_results(self):
+      moderator = create_moderator("mod6", "modpass")
+      competition = Competition("Comp1", datetime.now(), "Online", 1, 100)
+      team = Team("Team1")
+      db.session.add_all([moderator, competition, team])
+      db.session.commit()
+
+      competition.moderators.append(moderator)
+      db.session.commit()
+
+      comp_team = CompetitionTeam(comp_id=competition.id, team_id=team.id)
+      db.session.add(comp_team)
+      db.session.commit()
+
+      result = add_results("mod6", "Comp1", "Team1", 80)
+      assert result is not None
+      assert result.points_earned == 80
+      assert result.rating_score > 0
+
+    def test_calculate_expected_rank(self):
+      rating = 1600
+      opponents = [1500, 1550, 1700]
+      result = calculate_expected_rank(rating, opponents)
+      assert round(result, 2) == 1.57
+
+    def test_update_ratings(self):
+      db.drop_all()
+      db.create_all()
+
+      moderator = create_moderator("mod9", "modpass")
+      competition = Competition("Comp3", datetime.now(), "Online", 1, 100)
+      team = Team("Team2")
+      student = Student("student1", "studentpass")
+      db.session.add_all([moderator, competition, team, student])
+      db.session.commit()
+
+      team.students.append(student)
+      db.session.add(team)
+      competition.moderators.append(moderator)
+      db.session.add(competition)
+
+      comp_team = CompetitionTeam(comp_id=competition.id, team_id=team.id)
+      db.session.add(comp_team)
+      db.session.commit()
+
+      result = update_ratings("mod9", "Comp3")
+      assert result is not None
+      assert student.rating_score != 250
+      assert student.comp_count == 1
+
     #Team Unit Tests
     def test_new_team(self):
       db.drop_all()
@@ -83,6 +194,31 @@ class UnitTests(unittest.TestCase):
       team = Team("Scrum Lords")
       self.assertDictEqual(team.get_json(), {"id":None, "name":"Scrum Lords", "students": []})
     
+    def test_add_student(self):
+      db.drop_all()
+      db.create_all()
+
+      team = Team("Team Awesome")
+      student1 = Student("student1", "password1")
+      student2 = Student("student2", "password2")
+      db.session.add_all([team, student1, student2])
+      db.session.commit()
+
+      stud_team1 = team.add_student(student1)
+      assert stud_team1 is not None  
+      assert student1 in team.students  
+      assert team in student1.teams  
+
+      stud_team_duplicate = team.add_student(student1)
+      assert stud_team_duplicate is None  
+
+      stud_team2 = team.add_student(student2)
+      assert stud_team2 is not None  
+      assert student2 in team.students  
+      assert team in student2.teams  
+
+      assert len(team.students) == 2
+
     #Competition Unit Tests
     def test_new_competition(self):
       db.drop_all()
@@ -199,6 +335,79 @@ class UnitTests(unittest.TestCase):
       db.create_all()
       student_team = StudentTeam(1, 1)
       self.assertDictEqual(student_team.get_json(), {"id": None, "student_id": 1, "team_id": 1})
+
+    #Command Unit Tests
+    def test_get_current_leaderboard(self):
+      db.drop_all()
+      db.create_all()
+
+      leaderboard_data = [
+          {"student_id": 1, "curr_rank": 1, "rating_score": 900},
+          {"student_id": 2, "curr_rank": 2, "rating_score": 850},
+      ]
+      snapshot = LeaderboardSnapshot(leaderboard_data=leaderboard_data) 
+      db.session.add(snapshot)
+      db.session.commit()
+
+      command = GetCurrentLeaderboard()
+      result = command.execute()
+
+      assert result is not None
+      assert len(result) == 2
+      assert result[0]["student_id"] == 1
+      assert result[1]["student_id"] == 2
+
+    def test_update_leaderboard_command(self):
+      db.drop_all()
+      db.create_all()
+
+      studentA = Student(username="studentA", password="pass")
+      studentB = Student(username="studentB", password="pass")
+
+      studentA.rating_score = 900
+      studentA.curr_rank = 1
+      studentB.rating_score = 850
+      studentB.curr_rank = 2
+
+      db.session.add_all([studentA, studentB])
+      db.session.commit()
+
+      students = Student.query.all()
+      assert len(students) == 2, "Unexpected number of students in the database"
+
+      command = UpdateLeaderboardCommand()
+      command.execute()
+
+      updated_studentA = Student.query.filter_by(username="studentA").first()
+      updated_studentB = Student.query.filter_by(username="studentB").first()
+
+      assert updated_studentA.curr_rank == 1
+      assert updated_studentB.curr_rank == 2
+
+      snapshot = LeaderboardSnapshot.query.first()
+      assert snapshot is not None
+      assert len(snapshot.get_leaderboard_data()) == 2, "Unexpected number of snapshot entries"
+
+    def test_get_a_leaderboard_snapshot(self):
+      db.drop_all()
+      db.create_all()
+
+      leaderboard_data = [
+          {"student_id": 1, "curr_rank": 1, "rating_score": 900},
+          {"student_id": 2, "curr_rank": 2, "rating_score": 850},
+      ]
+      snapshot = LeaderboardSnapshot(leaderboard_data=leaderboard_data)
+      db.session.add(snapshot)
+      db.session.commit()
+
+      command = GetALeaderboardSnapshot()
+      result = command.execute(snapshot.id)
+
+      assert result is not None
+      assert len(result) == 2
+      assert result[0]["student_id"] == 1
+      assert result[1]["student_id"] == 2
+
 
 '''
     Integration Tests
