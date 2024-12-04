@@ -1,8 +1,8 @@
 services:
 - type: web
-  name: Baratie-competitions-platform
+  name: competitions-platform
   env: python
-  repo: https://github.com/Baratie-Project/Baratie-Competitions-Platform
+  repo: https://github.com/Ara-Ara-Arabiansss/SoftwareEngineering.git
   plan: free
   branch: main
   healthCheckPath: /healthcheck
