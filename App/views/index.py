@@ -1,4 +1,4 @@
-from flask import Blueprint, redirect, render_template, request, send_from_directory, jsonify, session, url_for
+from flask import Blueprint, redirect, render_template, request, send_from_directory, jsonify, session, url_for, redirect
 from flask_jwt_extended import jwt_required, current_user as jwt_current_user
 from flask_login import login_required, login_user, current_user, logout_user
 from App.models import db
@@ -10,6 +10,10 @@ index_views = Blueprint('index_views', __name__, template_folder='../templates')
 @index_views.route('/', methods=['GET'])
 def home_page():
     return render_template('leaderboard.html', leaderboard=display_rankings(), user=current_user)
+    
+@index_views.route('/')
+def index():
+    return redirect('/init')
 
 @index_views.route('/leaderboard', methods=['GET'])
 def leaderboard_page():
